@@ -1,6 +1,7 @@
 package com.example.product_management_system.controller;
 
 import com.example.product_management_system.dto.ProductDto;
+import com.example.product_management_system.dto.ProductResponse;
 import com.example.product_management_system.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,11 +67,28 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
         boolean deleted;
         try {
-             deleted = productService.deleteProduct(id);
+            deleted = productService.deleteProduct(id);
             if (!deleted) {
                 return new ResponseEntity<>("Product not deleted", HttpStatus.NOT_FOUND);
             }
             return new ResponseEntity<>("Sucessfully deleted", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/products-paginate")
+    public ResponseEntity<?> getProductPaginate(@RequestParam(name = "pageNo", defaultValue = "0") int pageNo,
+                                                @RequestParam(name = "pageSize", defaultValue = "2") int pageSize,
+                                                @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+                                                @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir) {
+        ProductResponse productResponse;
+        try {
+            productResponse = productService.getPproductSwitchPagination(pageNo, pageSize, sortBy, sortDir);
+            if (ObjectUtils.isEmpty(productResponse)) {
+                return new ResponseEntity<>(productResponse, HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(productResponse, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
